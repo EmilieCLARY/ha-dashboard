@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String         @map("password_hash")
+  name          String?
+  role          UserRole       @default(USER)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  
+  dashboards    Dashboard[]
+  notifications Notification[]
+  automations   Automation[]
+  refreshTokens RefreshToken[]
+  
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model Dashboard {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  config      Json     // Layout configuration (grid positions, widgets)
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("dashboards")
+}
+
+model EntityHistory {
+  id         String   @id @default(uuid())
+  entityId   String   @map("entity_id")
+  state      String
+  attributes Json
+  timestamp  DateTime @default(now())
+  
+  @@index([entityId, timestamp])
+  @@map("entity_history")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  title     String
+  message   String
+  type      NotificationType
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now()) @map("created_at")
+  
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, read])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  ERROR
+  SUCCESS
+}
+
+model Automation {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  trigger   Json     // Trigger configuration
+  condition Json?    // Optional conditions
+  action    Json     // Actions to execute
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, enabled])
+  @@map("automations")
+}
+
+model SystemMetric {
+  id         String   @id @default(uuid())
+  metricName String   @map("metric_name")
+  value      Float
+  metadata   Json?
+  timestamp  DateTime @default(now())
+  
+  @@index([metricName, timestamp])
+  @@map("system_metrics")
+}
