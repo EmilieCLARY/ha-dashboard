@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
+import { Badge } from '../components/ui/badge';
 import { Spinner } from '../components/ui/Spinner';
 import { useEntitiesStore } from '../stores/entities.store';
 import { apiService } from '../services/api.service';

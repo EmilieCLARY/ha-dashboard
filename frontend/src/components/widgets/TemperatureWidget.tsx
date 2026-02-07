@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Thermometer } from 'lucide-react';
 import { HomeAssistantEntity } from '../../types/homeAssistant';
+import {
+  Widget,
+  WidgetHeader,
+  WidgetTitle,
+  WidgetContent,
+  WidgetFooter,
+} from '../ui/widget';
+import { Label } from '../ui/label';
+import { Badge } from '../ui/badge';
 
 interface TemperatureWidgetProps {
   entity: HomeAssistantEntity;
@@ -24,57 +34,71 @@ export const TemperatureWidget: React.FC<TemperatureWidgetProps> = ({
     }
   }, [entity]);
 
+  const tempValue = parseFloat(temperature);
+
   const getTempColor = (temp: number): string => {
     if (temp < 15) return 'text-blue-500';
     if (temp < 20) return 'text-cyan-500';
     if (temp < 25) return 'text-green-500';
-    if (temp < 30) return 'text-yellow-500';
+    if (temp < 30) return 'text-amber-500';
     return 'text-red-500';
   };
 
-  const tempValue = parseFloat(temperature);
-  const tempColor = isNaN(tempValue) ? 'text-gray-500' : getTempColor(tempValue);
+  const getTempBadge = (temp: number) => {
+    if (isNaN(temp)) return { label: '--', variant: 'outline' as const };
+    if (temp < 15) return { label: 'Froid', variant: 'info' as const };
+    if (temp < 20) return { label: 'Frais', variant: 'info' as const };
+    if (temp < 25) return { label: 'Confort', variant: 'success' as const };
+    if (temp < 30) return { label: 'Chaud', variant: 'warning' as const };
+    return { label: 'Très chaud', variant: 'error' as const };
+  };
+
+  const tempColor = isNaN(tempValue) ? 'text-muted-foreground' : getTempColor(tempValue);
+  const badge = getTempBadge(tempValue);
 
   return (
-    <div
+    <Widget
+      variant="temperature"
+      design="default"
+      className={`cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all group ${className}`}
       onClick={() => navigate(`/entity/${entity.entity_id}`)}
-      className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-all cursor-pointer hover:scale-105 ${className}`}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <svg
-            className="w-6 h-6 text-gray-600 dark:text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-            />
-          </svg>
-          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
-            {entity.attributes.friendly_name || entity.entity_id}
-          </h3>
+      <WidgetHeader>
+        <WidgetTitle className="truncate flex items-center gap-2">
+          <Thermometer className="h-4 w-4 text-orange-500 flex-shrink-0" />
+          {entity.attributes.friendly_name || entity.entity_id}
+        </WidgetTitle>
+        <Badge variant={badge.variant}>{badge.label}</Badge>
+      </WidgetHeader>
+
+      <WidgetContent className="flex-col gap-1">
+        <div className="flex items-baseline gap-1">
+          <Label size="5xl" weight="bold" className={`tracking-tight ${tempColor}`}>
+            {temperature}
+          </Label>
+          {showUnit && (
+            <Label size="2xl" weight="medium" variant="muted">
+              {unit}
+            </Label>
+          )}
         </div>
-      </div>
+      </WidgetContent>
 
-      <div className="flex items-baseline gap-1">
-        <span className={`text-4xl font-bold ${tempColor}`}>
-          {temperature}
-        </span>
-        {showUnit && (
-          <span className="text-2xl font-medium text-gray-500 dark:text-gray-400">
-            {unit}
-          </span>
-        )}
-      </div>
-
-      <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-        Dernière mise à jour: {new Date(entity.last_updated).toLocaleTimeString('fr-FR')}
-      </div>
-    </div>
+      <WidgetFooter>
+        <Label size="xs" variant="muted">
+          {new Date(entity.last_updated).toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </Label>
+        <Label
+          size="xs"
+          variant="muted"
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          Détails →
+        </Label>
+      </WidgetFooter>
+    </Widget>
   );
 };

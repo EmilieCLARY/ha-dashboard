@@ -14,15 +14,25 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+
+        {/* Dashboard has its own layout (navbar + sidebar), render outside Layout */}
         <Route
           path="/"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Other pages use the shared Layout (Sidebar + Header) */}
+        <Route
           element={
             <ProtectedRoute>
               <Layout />
             </ProtectedRoute>
           }
         >
-          <Route index element={<Dashboard />} />
           <Route path="history" element={<History />} />
           <Route path="automations" element={<Automations />} />
           <Route path="system" element={<SystemMonitor />} />

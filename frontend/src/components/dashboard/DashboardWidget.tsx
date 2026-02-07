@@ -1,8 +1,7 @@
 import React from 'react';
-import { X, GripVertical } from 'lucide-react';
+import { X, GripVertical, Settings2 } from 'lucide-react';
 import { WidgetConfig, useDashboardStore } from '../../stores/dashboard-manager.store';
 import { useEntitiesStore } from '../../stores/entities.store';
-import { Card } from '../ui/Card';
 
 // Import all available widgets
 import { TemperatureWidget } from '../widgets/TemperatureWidget';
@@ -22,14 +21,14 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({ config }) => {
   const { getEntityById } = useEntitiesStore();
 
   const handleRemove = () => {
-    if (window.confirm('Remove this widget?')) {
+    if (window.confirm('Supprimer ce widget ?')) {
       removeWidget(config.i);
     }
   };
 
   const renderWidget = () => {
     const entity = config.entityId ? getEntityById(config.entityId) : undefined;
-    
+
     const widgetProps = {
       entity,
       entityId: config.entityId,
@@ -38,58 +37,75 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({ config }) => {
 
     switch (config.widgetType) {
       case 'temperature':
-        return entity ? <TemperatureWidget entity={entity} /> : <div>No entity</div>;
+        return entity ? <TemperatureWidget entity={entity} /> : <NoEntityPlaceholder type="temperature" />;
       case 'humidity':
-        return entity ? <HumidityWidget entity={entity} /> : <div>No entity</div>;
+        return entity ? <HumidityWidget entity={entity} /> : <NoEntityPlaceholder type="humidity" />;
       case 'battery':
-        return entity ? <BatteryWidget entity={entity} /> : <div>No entity</div>;
+        return entity ? <BatteryWidget entity={entity} /> : <NoEntityPlaceholder type="battery" />;
       case 'light':
-        return entity ? <LightWidget entity={entity} /> : <div>No entity</div>;
+        return entity ? <LightWidget entity={entity} /> : <NoEntityPlaceholder type="light" />;
       case 'energy':
-        return entity ? <EnergyWidget entity={entity} /> : <div>No entity</div>;
+        return entity ? <EnergyWidget entity={entity} /> : <NoEntityPlaceholder type="energy" />;
       case 'weather':
-        return entity ? <WeatherWidget entity={entity} /> : <div>No entity</div>;
+        return entity ? <WeatherWidget entity={entity} /> : <NoEntityPlaceholder type="weather" />;
       case 'system-status':
         return <SystemStatusWidget {...widgetProps} />;
       default:
         return (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">Unknown widget type: {config.widgetType}</p>
+          <div className="flex items-center justify-center h-full rounded-3xl border-2 border-dashed border-muted p-6">
+            <p className="text-muted-foreground text-sm">
+              Type inconnu : {config.widgetType}
+            </p>
           </div>
         );
     }
   };
 
   return (
-    <Card className="h-full flex flex-col relative">
-      {/* Drag Handle - Only visible in edit mode */}
+    <div className="h-full flex flex-col relative">
+      {/* Edit Mode Controls */}
       {editMode && (
-        <div className="widget-drag-handle flex items-center justify-between bg-gray-50 dark:bg-gray-800">
-          <div className="flex items-center gap-2">
-            <GripVertical size={16} className="text-gray-400" />
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="widget-drag-handle absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-1.5 bg-background/90 backdrop-blur-sm rounded-t-3xl border-b border-border">
+          <div className="flex items-center gap-1.5">
+            <GripVertical size={14} className="text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground capitalize">
               {config.widgetType}
             </span>
           </div>
           <div className="flex items-center gap-1">
             <button
               onClick={handleRemove}
-              className="p-1 hover:bg-red-100 dark:hover:bg-red-900 rounded transition-colors"
-              title="Remove widget"
+              className="p-1 hover:bg-destructive/10 rounded-full transition-colors"
+              title="Supprimer"
             >
-              <X size={16} className="text-red-600" />
+              <X size={14} className="text-destructive" />
             </button>
           </div>
         </div>
       )}
 
       {/* Widget Content */}
-      <div className="flex-1 overflow-hidden">{renderWidget()}</div>
+      <div className={`flex-1 overflow-hidden ${editMode ? 'pt-0' : ''}`}>
+        {renderWidget()}
+      </div>
 
       {/* Edit Mode Overlay */}
       {editMode && (
-        <div className="absolute inset-0 bg-blue-500 bg-opacity-5 pointer-events-none border-2 border-blue-400 border-dashed rounded-lg" />
+        <div className="absolute inset-0 bg-primary/5 pointer-events-none border-2 border-primary/30 border-dashed rounded-3xl" />
       )}
-    </Card>
+    </div>
   );
 };
+
+// Placeholder component for when no entity is configured
+function NoEntityPlaceholder({ type }: { type: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full rounded-3xl border-2 border-dashed border-muted bg-muted/20 p-6 gap-2">
+      <Settings2 className="h-8 w-8 text-muted-foreground/50" />
+      <p className="text-muted-foreground text-sm text-center">
+        Aucune entité configurée
+      </p>
+      <p className="text-muted-foreground/60 text-xs capitalize">{type}</p>
+    </div>
+  );
+}

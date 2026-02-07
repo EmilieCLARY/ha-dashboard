@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useEntitiesStore } from '../stores/entities.store';
+import { useAuthStore } from '../stores/auth.store';
 import { useDashboardStore } from '../stores/dashboard-manager.store';
-import { Edit2, Save, X, Menu, Grid, Plus } from 'lucide-react';
+import { Edit2, Save, X, Menu, Grid, Plus, Loader2, WifiOff, Wifi, AlertCircle, History, Zap, Server, Settings, LogOut, Thermometer } from 'lucide-react';
 import { DashboardGrid } from '../components/dashboard/DashboardGrid';
 import { DashboardWidget } from '../components/dashboard/DashboardWidget';
 import { DashboardManager } from '../components/dashboard/DashboardManager';
 import { TemplateGallery } from '../components/dashboard/TemplateGallery';
 import { WidgetPicker } from '../components/dashboard/WidgetPicker';
 import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/badge';
 
 export function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { logout } = useAuthStore();
   const {
     entities,
     loading,
@@ -31,13 +35,8 @@ export function Dashboard() {
   } = useDashboardStore();
 
   useEffect(() => {
-    // Fetch initial entities
     fetchEntities();
-
-    // Connect to WebSocket for real-time updates
     connectWebSocket();
-
-    // Load dashboards and templates
     loadDashboards();
     loadTemplates();
   }, [fetchEntities, connectWebSocket, loadDashboards, loadTemplates]);
@@ -46,10 +45,10 @@ export function Dashboard() {
 
   if (loading && entities.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading entities...</p>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground text-sm">Chargement des entités...</p>
         </div>
       </div>
     );
@@ -57,31 +56,33 @@ export function Dashboard() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-lg max-w-md">
-          <h2 className="text-red-800 dark:text-red-200 font-semibold mb-2">Connection Error</h2>
-          <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-          <button
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="bg-destructive/5 border-2 border-destructive/20 p-8 rounded-3xl max-w-md text-center space-y-4">
+          <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+          <h2 className="text-foreground font-semibold text-lg">Erreur de connexion</h2>
+          <p className="text-muted-foreground text-sm">{error}</p>
+          <Button
             onClick={() => fetchEntities()}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+            variant="danger"
+            size="sm"
           >
-            Retry
-          </button>
+            Réessayer
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Top Navigation Bar */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* ── Top Navigation Bar ── */}
+      <div className="bg-background/80 backdrop-blur-lg border-b-2 border-border z-10 flex-shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Left: Dashboard Title and Sidebar Toggle */}
-            <div className="flex items-center gap-4">
+            {/* Left: Dashboard Title */}
+            <div className="flex items-center gap-3">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="lg:hidden"
@@ -89,33 +90,29 @@ export function Dashboard() {
                 <Menu size={20} />
               </Button>
               <div>
-                <h1 className="text-xl font-bold">
+                <h1 className="text-lg font-bold text-foreground">
                   {activeDashboard?.name || 'Dashboard'}
                 </h1>
                 {activeDashboard?.description && (
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                  <p className="text-xs text-muted-foreground">
                     {activeDashboard.description}
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Right: Actions and Status */}
-            <div className="flex items-center gap-3">
+            {/* Right: Status & Actions */}
+            <div className="flex items-center gap-2.5">
               {/* Connection Status */}
-              <div className="hidden md:flex items-center gap-3 text-sm border-r pr-3 border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                    {wsConnected ? 'WS' : 'Disconnected'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${haConnected ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400">
-                    {haConnected ? 'HA' : 'Waiting'}
-                  </span>
-                </div>
+              <div className="hidden md:flex items-center gap-2 pr-3 border-r-2 border-border">
+                <Badge variant={wsConnected ? 'success' : 'error'} className="text-[10px] gap-1">
+                  {wsConnected ? <Wifi size={10} /> : <WifiOff size={10} />}
+                  WS
+                </Badge>
+                <Badge variant={haConnected ? 'success' : 'warning'} className="text-[10px] gap-1">
+                  <div className={`w-1.5 h-1.5 rounded-full ${haConnected ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                  HA
+                </Badge>
               </div>
 
               {/* Action Buttons */}
@@ -123,20 +120,20 @@ export function Dashboard() {
                 <>
                   <WidgetPicker />
                   <Button onClick={() => setEditMode(false)} size="sm">
-                    <Save size={16} className="mr-2" />
-                    Save
+                    <Save size={14} className="mr-1.5" />
+                    Sauvegarder
                   </Button>
-                  <Button onClick={() => setEditMode(false)} variant="outline" size="sm">
-                    <X size={16} className="mr-2" />
-                    Cancel
+                  <Button onClick={() => setEditMode(false)} variant="ghost" size="sm">
+                    <X size={14} className="mr-1.5" />
+                    Annuler
                   </Button>
                 </>
               ) : (
                 <>
                   <TemplateGallery />
                   <Button onClick={() => setEditMode(true)} variant="outline" size="sm">
-                    <Edit2 size={16} className="mr-2" />
-                    Edit
+                    <Edit2 size={14} className="mr-1.5" />
+                    Éditer
                   </Button>
                 </>
               )}
@@ -145,46 +142,89 @@ export function Dashboard() {
         </div>
       </div>
 
-      <div className="flex">
-        {/* Sidebar - Dashboard Manager */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* ── Sidebar – Dashboard Manager ── */}
         <aside
-          className={`fixed lg:static inset-y-0 left-0 z-20 w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform lg:translate-x-0 ${
+          className={`fixed lg:static inset-y-0 left-0 z-20 w-80 bg-background border-r-2 border-border transform transition-transform duration-300 lg:translate-x-0 flex flex-col ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <div className="h-full overflow-y-auto p-4">
+          {/* Logo */}
+          <div className="flex items-center gap-2 border-b-2 border-border px-5 py-4">
+            <Thermometer className="h-7 w-7 text-blue-600" />
+            <div>
+              <h2 className="text-base font-bold text-foreground">HA Dashboard</h2>
+              <p className="text-[10px] text-muted-foreground">Home Assistant</p>
+            </div>
+          </div>
+
+          {/* Dashboard Manager */}
+          <div className="flex-1 overflow-y-auto p-4">
             <div className="flex items-center justify-between mb-4 lg:hidden">
-              <h2 className="font-semibold text-lg">Dashboards</h2>
-              <Button variant="outline" size="sm" onClick={() => setSidebarOpen(false)}>
-                <X size={20} />
+              <h2 className="font-semibold text-lg text-foreground">Dashboards</h2>
+              <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(false)}>
+                <X size={18} />
               </Button>
             </div>
             <DashboardManager />
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="border-t-2 border-border p-3 space-y-1">
+            <Link to="/history" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+              <History size={16} />
+              Historique
+            </Link>
+            <Link to="/automations" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+              <Zap size={16} />
+              Automations
+            </Link>
+            <Link to="/system" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+              <Server size={16} />
+              Système
+            </Link>
+            <Link to="/settings" className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+              <Settings size={16} />
+              Paramètres
+            </Link>
+          </nav>
+
+          {/* Logout */}
+          <div className="border-t-2 border-border p-3">
+            <button
+              onClick={() => { logout(); window.location.href = '/login'; }}
+              className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-sm text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <LogOut size={16} />
+              Déconnexion
+            </button>
           </div>
         </aside>
 
         {/* Overlay for mobile */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-10 lg:hidden"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-10 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
-        {/* Main Content - Dashboard Grid */}
-        <main className="flex-1 p-4">
+        {/* ── Main Content – Dashboard Grid ── */}
+        <main className="flex-1 overflow-y-auto p-4">
           {dashboards.length === 0 ? (
             <div className="flex items-center justify-center min-h-96">
-              <div className="text-center max-w-md">
-                <Grid size={64} className="mx-auto text-gray-400 mb-4" />
-                <h2 className="text-2xl font-bold mb-2">No Dashboards Yet</h2>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Create your first dashboard or choose from a template to get started
+              <div className="text-center max-w-md space-y-5">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-muted">
+                  <Grid size={36} className="text-muted-foreground" />
+                </div>
+                <h2 className="text-2xl font-bold text-foreground">Aucun dashboard</h2>
+                <p className="text-muted-foreground text-sm">
+                  Créez votre premier dashboard ou choisissez un template pour commencer
                 </p>
                 <div className="flex gap-3 justify-center">
                   <Button onClick={() => setSidebarOpen(true)}>
-                    <Plus size={16} className="mr-2" />
-                    Create Dashboard
+                    <Plus size={14} className="mr-1.5" />
+                    Créer
                   </Button>
                   <TemplateGallery />
                 </div>
@@ -196,7 +236,7 @@ export function Dashboard() {
             </DashboardGrid>
           ) : (
             <div className="flex items-center justify-center min-h-96">
-              <p className="text-gray-500">Select a dashboard from the sidebar</p>
+              <p className="text-muted-foreground text-sm">Sélectionnez un dashboard</p>
             </div>
           )}
         </main>

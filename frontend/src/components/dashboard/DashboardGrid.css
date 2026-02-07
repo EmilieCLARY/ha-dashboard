@@ -1,6 +1,9 @@
+/* ── Dashboard Grid – Wigggle UI Design ── */
+
 .dashboard-grid {
   width: 100%;
   min-height: 100vh;
+  padding: 0.5rem;
 }
 
 .dashboard-grid .layout {
@@ -8,82 +11,113 @@
 }
 
 .dashboard-grid .grid-item {
-  transition: all 0.2s ease;
-  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 1.5rem; /* rounded-3xl to match Widget */
   overflow: hidden;
 }
 
 .dashboard-grid.edit-mode .grid-item {
   cursor: move;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(59, 130, 246, 0.15);
 }
 
 .dashboard-grid.edit-mode .grid-item:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 0 0 2px rgba(59, 130, 246, 0.3);
+  transform: translateY(-1px);
 }
 
-/* React Grid Layout Overrides */
+/* ── React Grid Layout Overrides ── */
+
 .react-grid-item.react-grid-placeholder {
-  background: rgba(59, 130, 246, 0.15);
-  border: 2px dashed rgba(59, 130, 246, 0.5);
-  border-radius: 8px;
+  background: hsl(var(--primary) / 0.08);
+  border: 2px dashed hsl(var(--primary) / 0.35);
+  border-radius: 1.5rem;
   opacity: 1;
-  transition: all 100ms ease;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 2;
+  backdrop-filter: blur(4px);
 }
 
 .react-grid-item.react-draggable-dragging {
   transition: none;
   z-index: 100;
   will-change: transform;
-  opacity: 0.9;
+  opacity: 0.92;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  border-radius: 1.5rem;
 }
 
 .react-grid-item.resizing {
-  opacity: 0.9;
+  opacity: 0.92;
   transition: none;
+  border-radius: 1.5rem;
 }
 
 .react-grid-item > .react-resizable-handle {
   position: absolute;
-  width: 20px;
-  height: 20px;
-  bottom: 0;
-  right: 0;
+  width: 24px;
+  height: 24px;
+  bottom: 4px;
+  right: 4px;
   cursor: se-resize;
   background: transparent;
+  z-index: 10;
 }
 
 .react-grid-item > .react-resizable-handle::after {
   content: '';
   position: absolute;
-  right: 3px;
-  bottom: 3px;
-  width: 10px;
-  height: 10px;
-  border-right: 2px solid rgba(0, 0, 0, 0.4);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+  right: 6px;
+  bottom: 6px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid hsl(var(--muted-foreground) / 0.3);
+  border-bottom: 2px solid hsl(var(--muted-foreground) / 0.3);
+  border-radius: 0 0 2px 0;
+  transition: border-color 0.2s ease;
 }
 
 .dashboard-grid.edit-mode .react-grid-item > .react-resizable-handle::after {
-  border-color: rgba(59, 130, 246, 0.6);
+  border-color: hsl(var(--primary) / 0.5);
 }
 
-/* Drag handle styling */
+.dashboard-grid.edit-mode .react-grid-item > .react-resizable-handle:hover::after {
+  border-color: hsl(var(--primary) / 0.8);
+}
+
+/* ── Drag handle styling ── */
+
 .widget-drag-handle {
   cursor: move;
   user-select: none;
-  padding: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 6px 10px;
+  border-radius: 1.5rem 1.5rem 0 0;
 }
 
 .dashboard-grid:not(.edit-mode) .widget-drag-handle {
   cursor: default;
 }
 
-/* Responsive adjustments */
+/* ── Responsive adjustments ── */
+
 @media (max-width: 768px) {
+  .dashboard-grid {
+    padding: 0.25rem;
+  }
+
   .dashboard-grid .react-grid-item {
     touch-action: none;
+  }
+
+  .dashboard-grid .grid-item {
+    border-radius: 1.25rem;
+  }
+
+  .react-grid-item.react-grid-placeholder {
+    border-radius: 1.25rem;
   }
 }

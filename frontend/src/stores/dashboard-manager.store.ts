@@ -89,8 +89,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   loadDashboards: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await apiService.get('/dashboards');
-      const dashboards = response.data.data;
+      const response = await apiService.get('/api/dashboards');
+      const dashboards = response.data;
       
       // Find default dashboard or first one
       const defaultDashboard = dashboards.find((d: Dashboard) => d.isDefault) || dashboards[0];
@@ -110,8 +110,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
   loadTemplates: async () => {
     try {
-      const response = await apiService.get('/dashboards/templates');
-      set({ templates: response.data.data });
+      const response = await apiService.get('/api/dashboards/templates');
+      set({ templates: response.data });
     } catch (error: any) {
       console.error('Failed to load templates:', error);
     }
@@ -124,8 +124,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   createDashboard: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await apiService.post('/dashboards', data);
-      const newDashboard = response.data.data;
+      const response = await apiService.post('/api/dashboards', data);
+      const newDashboard = response.data;
       
       set((state) => ({
         dashboards: [...state.dashboards, newDashboard],
@@ -146,8 +146,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   updateDashboard: async (id, data) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await apiService.put(`/dashboards/${id}`, data);
-      const updated = response.data.data;
+      const response = await apiService.put(`/api/dashboards/${id}`, data);
+      const updated = response.data;
       
       set((state) => ({
         dashboards: state.dashboards.map((d) => (d.id === id ? updated : d)),
@@ -165,7 +165,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   deleteDashboard: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      await apiService.delete(`/dashboards/${id}`);
+      await apiService.delete(`/api/dashboards/${id}`);
       
       set((state) => {
         const dashboards = state.dashboards.filter((d) => d.id !== id);
@@ -188,8 +188,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   duplicateDashboard: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await apiService.post(`/dashboards/${id}/duplicate`);
-      const duplicate = response.data.data;
+      const response = await apiService.post(`/api/dashboards/${id}/duplicate`);
+      const duplicate = response.data;
       
       set((state) => ({
         dashboards: [...state.dashboards, duplicate],
@@ -210,10 +210,10 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   createFromTemplate: async (templateId, name) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await apiService.post(`/dashboards/from-template/${templateId}`, {
+      const response = await apiService.post(`/api/dashboards/from-template/${templateId}`, {
         name,
       });
-      const dashboard = response.data.data;
+      const dashboard = response.data;
       
       set((state) => ({
         dashboards: [...state.dashboards, dashboard],
@@ -233,8 +233,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
   exportDashboard: async (id) => {
     try {
-      const response = await apiService.get(`/dashboards/${id}/export`);
-      return response.data.data;
+      const response = await apiService.get(`/api/dashboards/${id}/export`);
+      return response.data;
     } catch (error: any) {
       set({ error: error.response?.data?.error || 'Failed to export dashboard' });
       throw error;
@@ -244,8 +244,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   importDashboard: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await apiService.post('/dashboards/import', data);
-      const dashboard = response.data.data;
+      const response = await apiService.post('/api/dashboards/import', data);
+      const dashboard = response.data;
       
       set((state) => ({
         dashboards: [...state.dashboards, dashboard],

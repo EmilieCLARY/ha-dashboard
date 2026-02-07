@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Thermometer, Droplet, Battery, Lightbulb, Zap, Cloud, Activity } from 'lucide-react';
+import { Plus, Thermometer, Droplet, Battery, Lightbulb, Zap, Cloud, Activity, ArrowLeft, Search, ChevronRight } from 'lucide-react';
 import { useDashboardStore, WidgetConfig } from '../../stores/dashboard-manager.store';
 import { useEntitiesStore } from '../../stores/entities.store';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Card } from '../ui/Card';
+import { Badge } from '../ui/badge';
 
 interface WidgetType {
   type: string;
@@ -15,70 +15,86 @@ interface WidgetType {
   defaultSize: { w: number; h: number };
   requiresEntity: boolean;
   entityDomain?: string;
+  variant: 'temperature' | 'humidity' | 'battery' | 'light' | 'energy' | 'weather' | 'system';
+  color: string;
 }
 
 const WIDGET_TYPES: WidgetType[] = [
   {
     type: 'temperature',
-    name: 'Temperature',
-    icon: <Thermometer size={24} />,
-    description: 'Display temperature sensor data',
+    name: 'Température',
+    icon: <Thermometer size={20} />,
+    description: 'Capteur de température',
     defaultSize: { w: 2, h: 2 },
     requiresEntity: true,
     entityDomain: 'sensor',
+    variant: 'temperature',
+    color: 'text-orange-500 bg-orange-500/10',
   },
   {
     type: 'humidity',
-    name: 'Humidity',
-    icon: <Droplet size={24} />,
-    description: 'Display humidity sensor data',
+    name: 'Humidité',
+    icon: <Droplet size={20} />,
+    description: 'Capteur d\'humidité',
     defaultSize: { w: 2, h: 2 },
     requiresEntity: true,
     entityDomain: 'sensor',
+    variant: 'humidity',
+    color: 'text-sky-500 bg-sky-500/10',
   },
   {
     type: 'battery',
-    name: 'Battery',
-    icon: <Battery size={24} />,
-    description: 'Display battery level',
+    name: 'Batterie',
+    icon: <Battery size={20} />,
+    description: 'Niveau de batterie',
     defaultSize: { w: 2, h: 2 },
     requiresEntity: true,
     entityDomain: 'sensor',
+    variant: 'battery',
+    color: 'text-emerald-500 bg-emerald-500/10',
   },
   {
     type: 'light',
-    name: 'Light',
-    icon: <Lightbulb size={24} />,
-    description: 'Control light entities',
+    name: 'Lumière',
+    icon: <Lightbulb size={20} />,
+    description: 'Contrôle des lumières',
     defaultSize: { w: 2, h: 2 },
     requiresEntity: true,
     entityDomain: 'light',
+    variant: 'light',
+    color: 'text-amber-500 bg-amber-500/10',
   },
   {
     type: 'energy',
-    name: 'Energy',
-    icon: <Zap size={24} />,
-    description: 'Display energy consumption',
+    name: 'Énergie',
+    icon: <Zap size={20} />,
+    description: 'Consommation énergétique',
     defaultSize: { w: 3, h: 2 },
     requiresEntity: true,
     entityDomain: 'sensor',
+    variant: 'energy',
+    color: 'text-violet-500 bg-violet-500/10',
   },
   {
     type: 'weather',
-    name: 'Weather',
-    icon: <Cloud size={24} />,
-    description: 'Display weather information',
+    name: 'Météo',
+    icon: <Cloud size={20} />,
+    description: 'Informations météo',
     defaultSize: { w: 4, h: 3 },
     requiresEntity: true,
     entityDomain: 'weather',
+    variant: 'weather',
+    color: 'text-blue-500 bg-blue-500/10',
   },
   {
     type: 'system-status',
-    name: 'System Status',
-    icon: <Activity size={24} />,
-    description: 'Display Home Assistant system status',
+    name: 'Système',
+    icon: <Activity size={20} />,
+    description: 'Statut Home Assistant',
     defaultSize: { w: 4, h: 2 },
     requiresEntity: false,
+    variant: 'system',
+    color: 'text-rose-500 bg-rose-500/10',
   },
 ];
 
@@ -160,123 +176,112 @@ export const WidgetPicker: React.FC = () => {
     <>
       <Button onClick={() => setIsOpen(true)} size="sm">
         <Plus size={16} className="mr-2" />
-        Add Widget
+        Ajouter
       </Button>
 
       <Modal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title="Add Widget"
-        size="lg"
+        title={selectedType ? selectedType.name : 'Ajouter un widget'}
+        size="md"
       >
         {!selectedType ? (
-          <div className="space-y-4">
-            <p className="text-gray-600 dark:text-gray-400">
-              Choose a widget type to add to your dashboard
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {WIDGET_TYPES.map((widgetType) => (
-                <Card
-                  key={widgetType.type}
-                  className="cursor-pointer hover:shadow-lg transition-all p-4"
-                  onClick={() => handleSelectType(widgetType)}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg text-blue-600 dark:text-blue-400">
-                      {widgetType.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold mb-1">{widgetType.name}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {widgetType.description}
-                      </p>
-                      <div className="mt-2 text-xs text-gray-500">
-                        Size: {widgetType.defaultSize.w}x{widgetType.defaultSize.h}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+          /* ── Step 1: Widget type list ── */
+          <div className="space-y-1.5">
+            {WIDGET_TYPES.map((widgetType) => (
+              <button
+                key={widgetType.type}
+                onClick={() => handleSelectType(widgetType)}
+                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted transition-colors text-left group"
+              >
+                <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${widgetType.color}`}>
+                  {widgetType.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-foreground">{widgetType.name}</div>
+                  <div className="text-xs text-muted-foreground">{widgetType.description}</div>
+                </div>
+                <ChevronRight size={16} className="flex-shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            ))}
           </div>
         ) : (
+          /* ── Step 2: Entity selection ── */
           <div className="space-y-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg text-blue-600 dark:text-blue-400">
+            {/* Selected type recap */}
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
+              <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${selectedType.color}`}>
                 {selectedType.icon}
               </div>
-              <div>
-                <h3 className="font-semibold">{selectedType.name}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {selectedType.description}
-                </p>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-foreground">{selectedType.name}</div>
+                <div className="text-xs text-muted-foreground">{selectedType.description}</div>
               </div>
+              <Badge variant="outline" className="flex-shrink-0 text-[10px]">
+                {selectedType.defaultSize.w}×{selectedType.defaultSize.h}
+              </Badge>
             </div>
 
             {selectedType.requiresEntity ? (
               <>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Search Entity</label>
-                  <Input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by entity ID or name..."
-                    autoFocus
-                  />
-                </div>
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Rechercher une entité..."
+                  leftIcon={<Search size={16} />}
+                  autoFocus
+                />
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Select Entity ({filteredEntities.length} available)
-                  </label>
-                  <div className="max-h-64 overflow-y-auto space-y-1 border rounded-lg p-2 dark:border-gray-700">
-                    {filteredEntities.length === 0 ? (
-                      <p className="text-center text-gray-500 py-4">
-                        No entities found
-                      </p>
-                    ) : (
-                      filteredEntities.map((entity) => (
-                        <div
-                          key={entity.entity_id}
-                          onClick={() => setSelectedEntity(entity.entity_id)}
-                          className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                            selectedEntity === entity.entity_id
-                              ? 'bg-blue-100 dark:bg-blue-900 border-2 border-blue-500'
-                              : 'hover:bg-gray-100 dark:hover:bg-gray-800 border-2 border-transparent'
-                          }`}
-                        >
-                          <div className="font-medium text-sm">
-                            {entity.attributes.friendly_name || entity.entity_id}
-                          </div>
-                          <div className="text-xs text-gray-500 font-mono">
-                            {entity.entity_id}
-                          </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                            State: {entity.state}
-                          </div>
+                <div className="max-h-56 overflow-y-auto space-y-1 border-2 rounded-xl p-1.5 border-border">
+                  {filteredEntities.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-6 text-sm">
+                      Aucune entité trouvée
+                    </p>
+                  ) : (
+                    filteredEntities.map((entity) => (
+                      <button
+                        key={entity.entity_id}
+                        onClick={() => setSelectedEntity(entity.entity_id)}
+                        className={`w-full text-left p-2.5 rounded-lg transition-colors ${
+                          selectedEntity === entity.entity_id
+                            ? 'bg-primary/10 ring-1 ring-primary/40'
+                            : 'hover:bg-muted'
+                        }`}
+                      >
+                        <div className="text-sm font-medium truncate">
+                          {entity.attributes.friendly_name || entity.entity_id}
                         </div>
-                      ))
-                    )}
-                  </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[11px] text-muted-foreground font-mono truncate">
+                            {entity.entity_id}
+                          </span>
+                          <Badge variant="outline" className="text-[9px] flex-shrink-0">
+                            {entity.state}
+                          </Badge>
+                        </div>
+                      </button>
+                    ))
+                  )}
                 </div>
               </>
             ) : (
-              <div className="text-center py-4 text-gray-600 dark:text-gray-400">
-                This widget doesn't require an entity selection
-              </div>
+              <p className="text-center text-muted-foreground text-sm py-4">
+                Ce widget ne nécessite pas d'entité
+              </p>
             )}
 
-            <div className="flex gap-2 justify-end">
-              <Button onClick={handleBack} variant="outline">
-                Back
+            <div className="flex gap-2 justify-end pt-1">
+              <Button onClick={handleBack} variant="outline" size="sm">
+                <ArrowLeft size={14} className="mr-1.5" />
+                Retour
               </Button>
               <Button
                 onClick={handleAddWidget}
                 disabled={selectedType.requiresEntity && !selectedEntity}
+                size="sm"
               >
-                <Plus size={16} className="mr-2" />
-                Add Widget
+                <Plus size={14} className="mr-1.5" />
+                Ajouter
               </Button>
             </div>
           </div>

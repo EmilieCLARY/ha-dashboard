@@ -1,27 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 
 export function LoginPage() {
-  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  // NOTE: Registration disabled for security. To re-enable, restore isRegisterMode state and register form.
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const navigate = useNavigate();
 
-  const { login, register, isLoading, error, clearError } = useAuthStore();
+  const { login, isLoading, error, clearError } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
 
     try {
-      if (isRegisterMode) {
-        await register(email, password, name);
-      } else {
-        await login(email, password);
-      }
+      await login(email, password);
       navigate('/');
     } catch (error) {
       console.error('Auth error:', error);
@@ -35,19 +30,13 @@ export function LoginPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full mb-4">
-              {isRegisterMode ? (
-                <UserPlus className="w-8 h-8 text-white" />
-              ) : (
-                <LogIn className="w-8 h-8 text-white" />
-              )}
+              <LogIn className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              {isRegisterMode ? 'Create Account' : 'Welcome Back'}
+              Connexion
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              {isRegisterMode
-                ? 'Sign up to access your dashboard'
-                : 'Sign in to access your dashboard'}
+              Connectez-vous pour accéder au dashboard
             </p>
           </div>
 
@@ -60,32 +49,12 @@ export function LoginPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {isRegisterMode && (
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required={isRegisterMode}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
-                  placeholder="John Doe"
-                />
-              </div>
-            )}
-
             <div>
               <label
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
-                Email Address
+                Email
               </label>
               <input
                 id="email"
@@ -115,11 +84,6 @@ export function LoginPage() {
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
                 placeholder="••••••••"
               />
-              {isRegisterMode && (
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Must be at least 8 characters
-                </p>
-              )}
             </div>
 
             <button
@@ -130,41 +94,16 @@ export function LoginPage() {
               {isLoading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  {isRegisterMode ? 'Creating Account...' : 'Signing In...'}
+                  Connexion...
                 </>
               ) : (
                 <>
-                  {isRegisterMode ? (
-                    <>
-                      <UserPlus className="w-5 h-5" />
-                      Create Account
-                    </>
-                  ) : (
-                    <>
-                      <LogIn className="w-5 h-5" />
-                      Sign In
-                    </>
-                  )}
+                  <LogIn className="w-5 h-5" />
+                  Se connecter
                 </>
               )}
             </button>
           </form>
-
-          {/* Toggle Mode */}
-          <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setIsRegisterMode(!isRegisterMode);
-                clearError();
-              }}
-              className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-            >
-              {isRegisterMode
-                ? 'Already have an account? Sign in'
-                : "Don't have an account? Sign up"}
-            </button>
-          </div>
         </div>
 
         {/* Footer */}
