@@ -1,6 +1,7 @@
 import React from 'react';
-import { X, GripVertical, Settings } from 'lucide-react';
+import { X, GripVertical } from 'lucide-react';
 import { WidgetConfig, useDashboardStore } from '../../stores/dashboard-manager.store';
+import { useEntitiesStore } from '../../stores/entities.store';
 import { Card } from '../ui/Card';
 
 // Import all available widgets
@@ -18,6 +19,7 @@ interface DashboardWidgetProps {
 
 export const DashboardWidget: React.FC<DashboardWidgetProps> = ({ config }) => {
   const { editMode, removeWidget } = useDashboardStore();
+  const { getEntityById } = useEntitiesStore();
 
   const handleRemove = () => {
     if (window.confirm('Remove this widget?')) {
@@ -26,24 +28,27 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({ config }) => {
   };
 
   const renderWidget = () => {
+    const entity = config.entityId ? getEntityById(config.entityId) : undefined;
+    
     const widgetProps = {
+      entity,
       entityId: config.entityId,
       ...config.config,
     };
 
     switch (config.widgetType) {
       case 'temperature':
-        return <TemperatureWidget {...widgetProps} />;
+        return entity ? <TemperatureWidget entity={entity} /> : <div>No entity</div>;
       case 'humidity':
-        return <HumidityWidget {...widgetProps} />;
+        return entity ? <HumidityWidget entity={entity} /> : <div>No entity</div>;
       case 'battery':
-        return <BatteryWidget {...widgetProps} />;
+        return entity ? <BatteryWidget entity={entity} /> : <div>No entity</div>;
       case 'light':
-        return <LightWidget {...widgetProps} />;
+        return entity ? <LightWidget entity={entity} /> : <div>No entity</div>;
       case 'energy':
-        return <EnergyWidget {...widgetProps} />;
+        return entity ? <EnergyWidget entity={entity} /> : <div>No entity</div>;
       case 'weather':
-        return <WeatherWidget {...widgetProps} />;
+        return entity ? <WeatherWidget entity={entity} /> : <div>No entity</div>;
       case 'system-status':
         return <SystemStatusWidget {...widgetProps} />;
       default:

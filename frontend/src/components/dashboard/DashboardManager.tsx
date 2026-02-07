@@ -6,7 +6,6 @@ import {
   Copy,
   Check,
   Star,
-  ChevronDown,
   MoreVertical,
   Download,
   Upload,
