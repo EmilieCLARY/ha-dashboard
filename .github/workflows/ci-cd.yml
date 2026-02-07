@@ -286,6 +286,9 @@ jobs:
         timeout: 60s
         command_timeout: 30m
         script: |
+          # Set default path if not provided
+          APP_PATH=${APP_PATH:-~/ha-dashboard}
+          
           # Initialize or update repository
           if [ ! -d "${APP_PATH}/.git" ]; then
             echo "🔧 First deployment - cloning repository..."
@@ -346,6 +349,9 @@ jobs:
         timeout: 60s
         command_timeout: 30m
         script: |
+          # Set default path if not provided
+          APP_PATH=${APP_PATH:-~/ha-dashboard}
+          
           # Initialize or update repository
           if [ ! -d "${APP_PATH}/.git" ]; then
             echo "🔧 First deployment - cloning repository..."
@@ -405,6 +411,9 @@ jobs:
         timeout: 60s
         command_timeout: 30m
         script: |
+          # Set default path if not provided
+          APP_PATH=${APP_PATH:-~/ha-dashboard}
+          
           # Initialize or update repository
           if [ ! -d "${APP_PATH}/.git" ]; then
             echo "🔧 First deployment - cloning repository..."
