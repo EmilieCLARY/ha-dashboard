@@ -128,7 +128,6 @@ export const WidgetPicker: React.FC = () => {
 
     // Find next available position
     const layout = activeDashboard.config.layout;
-    const cols = activeDashboard.config.cols || 12;
     const maxY = layout.reduce((max, item) => Math.max(max, item.y + item.h), 0);
 
     const newWidget: WidgetConfig = {
