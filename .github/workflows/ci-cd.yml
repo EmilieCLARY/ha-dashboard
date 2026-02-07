@@ -307,6 +307,19 @@ jobs:
           # Ensure required directories exist
           mkdir -p ${APP_PATH}/backups ${APP_PATH}/logs
           
+          # Fix DATABASE_URL to match PostgreSQL credentials
+          echo "⚙️ Synchronizing database credentials..."
+          if [ -f "${APP_PATH}/.env" ]; then
+            # Extract existing PostgreSQL password
+            PG_PASSWORD=$(grep POSTGRES_PASSWORD ${APP_PATH}/.env | cut -d'=' -f2)
+            # Update DATABASE_URL with correct password
+            sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://ha_dashboard:${PG_PASSWORD}@postgres:5432/ha_dashboard|g" ${APP_PATH}/.env
+            # Ensure other required variables exist
+            grep -q "REDIS_URL=" ${APP_PATH}/.env || echo "REDIS_URL=redis://redis:6379" >> ${APP_PATH}/.env
+            grep -q "NODE_ENV=" ${APP_PATH}/.env || echo "NODE_ENV=production" >> ${APP_PATH}/.env
+            grep -q "PORT=" ${APP_PATH}/.env || echo "PORT=4000" >> ${APP_PATH}/.env
+          fi
+          
           # Backup database before deployment (skip if containers don't exist yet)
           echo "💾 Creating database backup..."
           docker-compose exec -T postgres pg_dump -U ha_dashboard ha_dashboard > ./backups/db_backup_$(date +%Y%m%d_%H%M%S).sql 2>/dev/null || echo "Backup skipped (database not running)"
@@ -370,6 +383,19 @@ jobs:
           # Ensure required directories exist
           mkdir -p ${APP_PATH}/backups ${APP_PATH}/logs
           
+          # Fix DATABASE_URL to match PostgreSQL credentials
+          echo "⚙️ Synchronizing database credentials..."
+          if [ -f "${APP_PATH}/.env" ]; then
+            # Extract existing PostgreSQL password
+            PG_PASSWORD=$(grep POSTGRES_PASSWORD ${APP_PATH}/.env | cut -d'=' -f2)
+            # Update DATABASE_URL with correct password
+            sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://ha_dashboard:${PG_PASSWORD}@postgres:5432/ha_dashboard|g" ${APP_PATH}/.env
+            # Ensure other required variables exist
+            grep -q "REDIS_URL=" ${APP_PATH}/.env || echo "REDIS_URL=redis://redis:6379" >> ${APP_PATH}/.env
+            grep -q "NODE_ENV=" ${APP_PATH}/.env || echo "NODE_ENV=production" >> ${APP_PATH}/.env
+            grep -q "PORT=" ${APP_PATH}/.env || echo "PORT=4000" >> ${APP_PATH}/.env
+          fi
+          
           # Backup database before deployment (skip if containers don't exist yet)
           echo "💾 Creating database backup..."
           docker-compose exec -T postgres pg_dump -U ha_dashboard ha_dashboard > ./backups/db_backup_$(date +%Y%m%d_%H%M%S).sql 2>/dev/null || echo "Backup skipped (database not running)"
@@ -431,6 +457,19 @@ jobs:
           
           # Ensure required directories exist
           mkdir -p ${APP_PATH}/backups ${APP_PATH}/logs
+          
+          # Fix DATABASE_URL to match PostgreSQL credentials
+          echo "⚙️ Synchronizing database credentials..."
+          if [ -f "${APP_PATH}/.env" ]; then
+            # Extract existing PostgreSQL password
+            PG_PASSWORD=$(grep POSTGRES_PASSWORD ${APP_PATH}/.env | cut -d'=' -f2)
+            # Update DATABASE_URL with correct password
+            sed -i "s|DATABASE_URL=.*|DATABASE_URL=postgresql://ha_dashboard:${PG_PASSWORD}@postgres:5432/ha_dashboard|g" ${APP_PATH}/.env
+            # Ensure other required variables exist
+            grep -q "REDIS_URL=" ${APP_PATH}/.env || echo "REDIS_URL=redis://redis:6379" >> ${APP_PATH}/.env
+            grep -q "NODE_ENV=" ${APP_PATH}/.env || echo "NODE_ENV=production" >> ${APP_PATH}/.env
+            grep -q "PORT=" ${APP_PATH}/.env || echo "PORT=4000" >> ${APP_PATH}/.env
+          fi
           
           # Backup database before deployment (skip if containers don't exist yet)
           echo "💾 Creating database backup..."
