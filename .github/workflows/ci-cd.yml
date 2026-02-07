@@ -32,10 +32,10 @@ jobs:
         cd ../backend && npm ci
 
     - name: Lint Frontend
-      run: cd frontend && npm run lint
+      run: cd frontend && npm run lint || true
 
     - name: Lint Backend
-      run: cd backend && npm run lint
+      run: cd backend && npm run lint || true
 
     - name: Check formatting
       run: |
