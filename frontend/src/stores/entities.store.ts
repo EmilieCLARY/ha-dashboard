@@ -15,6 +15,7 @@ interface EntitiesState {
   fetchEntities: () => Promise<void>;
   updateEntity: (entityId: string, newState: Partial<HomeAssistantEntity>) => void;
   getEntity: (entityId: string) => HomeAssistantEntity | undefined;
+  getEntityById: (entityId: string) => HomeAssistantEntity | undefined;
   getEntitiesByDomain: (domain: string) => HomeAssistantEntity[];
   connectWebSocket: () => void;
   disconnectWebSocket: () => void;
@@ -57,6 +58,10 @@ export const useEntitiesStore = create<EntitiesState>((set, get) => ({
   },
 
   getEntity: (entityId: string) => {
+    return get().entities.find((e) => e.entity_id === entityId);
+  },
+
+  getEntityById: (entityId: string) => {
     return get().entities.find((e) => e.entity_id === entityId);
   },
 
