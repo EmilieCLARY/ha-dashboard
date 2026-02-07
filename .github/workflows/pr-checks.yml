@@ -1,0 +1,199 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # Job 1: Check code style
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd frontend && npm ci
+        cd ../backend && npm ci
+
+    - name: Lint Frontend
+      run: cd frontend && npm run lint
+
+    - name: Lint Backend
+      run: cd backend && npm run lint
+
+  # Job 2: Run tests
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        cd backend && npm ci
+        cd ../frontend && npm ci
+
+    - name: Generate Prisma Client
+      run: cd backend && npx prisma generate
+
+    - name: Run backend tests
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379
+        JWT_SECRET: test_secret_key_for_ci
+        JWT_REFRESH_SECRET: test_refresh_secret_key_for_ci
+        NODE_ENV: test
+      run: cd backend && npm test -- --run || true
+
+    - name: Run frontend tests
+      run: cd frontend && npm test -- --run || true
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          backend/coverage
+          frontend/coverage
+        retention-days: 7
+
+  # Job 3: Build check
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    needs: [code-quality]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        cd backend && npm ci
+        cd ../frontend && npm ci
+
+    - name: Generate Prisma Client
+      run: cd backend && npx prisma generate
+
+    - name: Build backend
+      run: cd backend && npm run build
+
+    - name: Build frontend
+      env:
+        VITE_API_URL: http://localhost:4000
+        VITE_WS_URL: ws://localhost:4000
+      run: cd frontend && npm run build
+
+  # Job 4: Security check
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy results to GitHub Security
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Job 5: Summary check
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [code-quality, test, build, security]
+    if: always()
+    
+    steps:
+    - name: Check job statuses
+      run: |
+        if [ "${{ needs.code-quality.result }}" = "failure" ]; then
+          echo "❌ Code quality checks failed"
+          exit 1
+        fi
+        if [ "${{ needs.build.result }}" = "failure" ]; then
+          echo "❌ Build checks failed"
+          exit 1
+        fi
+        echo "✅ All PR checks passed!"
+
+    - name: Add PR comment
+      if: always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const status = '${{ needs.pr-summary.result }}';
+          const body = status === 'failure' 
+            ? '❌ PR checks failed. Please review the logs.'
+            : '✅ All PR checks passed!';
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: body
+          });

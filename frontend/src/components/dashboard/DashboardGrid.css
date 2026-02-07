@@ -1,0 +1,89 @@
+.dashboard-grid {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.dashboard-grid .layout {
+  position: relative;
+}
+
+.dashboard-grid .grid-item {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dashboard-grid.edit-mode .grid-item {
+  cursor: move;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-grid.edit-mode .grid-item:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* React Grid Layout Overrides */
+.react-grid-item.react-grid-placeholder {
+  background: rgba(59, 130, 246, 0.15);
+  border: 2px dashed rgba(59, 130, 246, 0.5);
+  border-radius: 8px;
+  opacity: 1;
+  transition: all 100ms ease;
+  z-index: 2;
+}
+
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 100;
+  will-change: transform;
+  opacity: 0.9;
+}
+
+.react-grid-item.resizing {
+  opacity: 0.9;
+  transition: none;
+}
+
+.react-grid-item > .react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+  background: transparent;
+}
+
+.react-grid-item > .react-resizable-handle::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid rgba(0, 0, 0, 0.4);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+}
+
+.dashboard-grid.edit-mode .react-grid-item > .react-resizable-handle::after {
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+/* Drag handle styling */
+.widget-drag-handle {
+  cursor: move;
+  user-select: none;
+  padding: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-grid:not(.edit-mode) .widget-drag-handle {
+  cursor: default;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-grid .react-grid-item {
+    touch-action: none;
+  }
+}

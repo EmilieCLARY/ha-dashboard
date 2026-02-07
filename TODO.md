@@ -155,27 +155,31 @@
   - [x] Frontend: entities.store (10 tests)
   - [x] Backend: Health endpoint (2 tests)
   - [x] Backend: Auth routes (18 tests)
-- [ ] Tests unitaires complets (restants ~193 tests)
-  - [ ] Frontend: 4 widgets restants (Humidity, Battery, Weather, SystemStatus)
-  - [ ] Frontend: 4 pages (Dashboard, SystemMonitor, EntityDetail, Login)
-  - [ ] Frontend: 4 composants UI (Card, Modal, Input, Spinner)
-  - [ ] Frontend: Services complets (API HTTP, WebSocket)
-  - [ ] Frontend: auth.store
-  - [ ] Backend: Services (HA, Auth, Cache)
-  - [ ] Backend: Routes restantes (Entities, Services)
-  - [ ] Backend: Middleware (Auth, Error)
-- [ ] Tests d'intégration API
+- [x] Tests unitaires complets (280+ tests créés) ✅
+  - [x] Frontend: 6 widgets (Temperature, Humidity, Battery, Light, Energy, Weather, SystemStatus)
+  - [x] Frontend: 4 pages (Dashboard, SystemMonitor, EntityDetail, Login)
+  - [x] Frontend: 5 composants UI (Button, Card, Modal, Input, Spinner)
+  - [x] Frontend: Services (API HTTP, WebSocket)
+  - [x] Frontend: stores (auth.store, entities.store)
+  - [x] Backend: Services (Auth, Cache)
+  - [x] Backend: Routes (Auth, Entities, Services)
+  - [x] Backend: Middleware (Auth, Error)
+- [ ] Tests d'intégration API (à explorer)
   - [ ] User flow complet
   - [ ] WebSocket events
   - [ ] Error handling
-- [ ] ESLint + Prettier configurés
+- [x] ESLint + Prettier configurés ✅
   - [x] ESLint configuré
   - [x] Prettier configuré
   - [ ] Pre-commit hooks (Husky)
-- [ ] CI/CD GitHub Actions
-  - [ ] Tests automatiques
-  - [ ] Build automatique
-  - [ ] Déploiement automatique
+- [x] CI/CD GitHub Actions ✅
+  - [x] Tests automatiques (linting + tests)
+  - [x] Build automatique (Docker images)
+  - [x] Déploiement automatique sur VPS
+  - [x] Scripts de déploiement manuel
+  - [x] Health checks
+  - [x] Migrations automatiques
+  - [x] Rollback capability
 
 ### Documentation
 - [ ] README avec screenshots

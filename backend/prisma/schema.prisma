@@ -50,14 +50,20 @@ model Dashboard {
   id          String   @id @default(uuid())
   userId      String   @map("user_id")
   name        String
+  description String?
   config      Json     // Layout configuration (grid positions, widgets)
   isDefault   Boolean  @default(false) @map("is_default")
+  isTemplate  Boolean  @default(false) @map("is_template") // Is this a template?
+  templateId  String?  @map("template_id") // If created from template
+  order       Int      @default(0) // Display order
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
+  @@index([userId, isDefault])
+  @@index([isTemplate])
   @@map("dashboards")
 }
 

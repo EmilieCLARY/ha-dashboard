@@ -19,9 +19,20 @@ Dashboard de monitoring personnalisé pour Home Assistant avec React, Node.js, P
 git clone <repo-url>
 cd ha-dashboard
 
-# Configurer les variables d'environnement
+# Générer .env avec JWT secrets sécurisés
+./scripts/generate-env.sh
+
+# OU manuellement:
 cp .env.example .env
-# Éditer .env avec vos credentials Home Assistant
+# Éditer .env avec vos credentials:
+# - HA_URL (votre URL Home Assistant)
+# - HA_TOKEN (token d'accès Home Assistant)
+# - JWT_SECRET et JWT_REFRESH_SECRET (voir ci-dessous)
+# - POSTGRES_PASSWORD et REDIS_PASSWORD
+
+# Générer des JWT secrets sécurisés:
+node -e "console.log('JWT_SECRET=' + require('crypto').randomBytes(32).toString('hex'))"
+node -e "console.log('JWT_REFRESH_SECRET=' + require('crypto').randomBytes(32).toString('hex'))"
 
 # Lancer avec Docker
 docker-compose up -d
@@ -33,6 +44,16 @@ npm run dev
 **Frontend**: http://localhost:3000  
 **Backend API**: http://localhost:4000
 
+### 🔐 Configuration Requise
+
+**Variables essentielles dans `.env`:**
+- `HA_URL` - URL de votre Home Assistant
+- `HA_TOKEN` - Token d'accès longue durée
+- `JWT_SECRET` - Clé secrète 64 caractères (hex)
+- `JWT_REFRESH_SECRET` - Clé secrète 64 caractères (hex)
+- `POSTGRES_PASSWORD` - Mot de passe DB
+- `REDIS_PASSWORD` - Mot de passe Redis
+
 ## 📚 Documentation
 
 **→ [Documentation complète dans `docs/`](./docs/README.md)**
@@ -40,10 +61,11 @@ npm run dev
 | Document | Description |
 |----------|-------------|
 | [QUICKSTART](./docs/QUICKSTART.md) | Guide de démarrage rapide |
+| [VPS_SETUP](./docs/VPS_SETUP.md) | **🚀 Installation VPS complète** |
+| [DEPLOYMENT_GUIDE](./DEPLOYMENT_GUIDE.md) | Déploiement & GitHub Actions |
 | [ARCHITECTURE](./docs/ARCHITECTURE.md) | Architecture technique |
 | [API](./docs/API.md) | Documentation API REST |
 | [TESTING](./docs/TESTING.md) | Guide des tests |
-| [DEPLOYMENT](./docs/DEPLOYMENT.md) | Déploiement production |
 
 ## 🛠️ Stack Technique
 
