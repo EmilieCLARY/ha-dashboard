@@ -286,17 +286,27 @@ jobs:
         timeout: 60s
         command_timeout: 30m
         script: |
-          cd ${APP_PATH}
+          # Initialize or update repository
+          if [ ! -d "${APP_PATH}/.git" ]; then
+            echo "🔧 First deployment - cloning repository..."
+            mkdir -p ${APP_PATH}
+            cd ${APP_PATH}
+            git clone https://github.com/${{ github.repository }}.git .
+            mkdir -p backups logs
+          else
+            echo "📥 Pulling latest changes..."
+            cd ${APP_PATH}
+            git fetch origin
+            git checkout main
+            git pull origin main
+          fi
           
-          # Pull latest changes
-          echo "📥 Pulling latest changes..."
-          git fetch origin
-          git checkout main
-          git pull origin main
+          # Ensure required directories exist
+          mkdir -p ${APP_PATH}/backups ${APP_PATH}/logs
           
-          # Backup database before deployment
+          # Backup database before deployment (skip if containers don't exist yet)
           echo "💾 Creating database backup..."
-          docker-compose exec -T postgres pg_dump -U ha_dashboard ha_dashboard > ./backups/db_backup_$(date +%Y%m%d_%H%M%S).sql || echo "Backup failed, continuing..."
+          docker-compose exec -T postgres pg_dump -U ha_dashboard ha_dashboard > ./backups/db_backup_$(date +%Y%m%d_%H%M%S).sql 2>/dev/null || echo "Backup skipped (database not running)"
           
           # Pull and build Docker images
           echo "🐳 Building Docker images..."
@@ -336,17 +346,27 @@ jobs:
         timeout: 60s
         command_timeout: 30m
         script: |
-          cd ${APP_PATH}
+          # Initialize or update repository
+          if [ ! -d "${APP_PATH}/.git" ]; then
+            echo "🔧 First deployment - cloning repository..."
+            mkdir -p ${APP_PATH}
+            cd ${APP_PATH}
+            git clone https://github.com/${{ github.repository }}.git .
+            mkdir -p backups logs
+          else
+            echo "📥 Pulling latest changes..."
+            cd ${APP_PATH}
+            git fetch origin
+            git checkout main
+            git pull origin main
+          fi
           
-          # Pull latest changes
-          echo "📥 Pulling latest changes..."
-          git fetch origin
-          git checkout main
-          git pull origin main
+          # Ensure required directories exist
+          mkdir -p ${APP_PATH}/backups ${APP_PATH}/logs
           
-          # Backup database before deployment
+          # Backup database before deployment (skip if containers don't exist yet)
           echo "💾 Creating database backup..."
-          docker-compose exec -T postgres pg_dump -U ha_dashboard ha_dashboard > ./backups/db_backup_$(date +%Y%m%d_%H%M%S).sql || echo "Backup failed, continuing..."
+          docker-compose exec -T postgres pg_dump -U ha_dashboard ha_dashboard > ./backups/db_backup_$(date +%Y%m%d_%H%M%S).sql 2>/dev/null || echo "Backup skipped (database not running)"
           
           # Pull and build Docker images
           echo "🐳 Building Docker images..."
@@ -385,17 +405,27 @@ jobs:
         timeout: 60s
         command_timeout: 30m
         script: |
-          cd ${APP_PATH}
+          # Initialize or update repository
+          if [ ! -d "${APP_PATH}/.git" ]; then
+            echo "🔧 First deployment - cloning repository..."
+            mkdir -p ${APP_PATH}
+            cd ${APP_PATH}
+            git clone https://github.com/${{ github.repository }}.git .
+            mkdir -p backups logs
+          else
+            echo "📥 Pulling latest changes..."
+            cd ${APP_PATH}
+            git fetch origin
+            git checkout main
+            git pull origin main
+          fi
           
-          # Pull latest changes
-          echo "📥 Pulling latest changes..."
-          git fetch origin
-          git checkout main
-          git pull origin main
+          # Ensure required directories exist
+          mkdir -p ${APP_PATH}/backups ${APP_PATH}/logs
           
-          # Backup database before deployment
+          # Backup database before deployment (skip if containers don't exist yet)
           echo "💾 Creating database backup..."
-          docker-compose exec -T postgres pg_dump -U ha_dashboard ha_dashboard > ./backups/db_backup_$(date +%Y%m%d_%H%M%S).sql || echo "Backup failed, continuing..."
+          docker-compose exec -T postgres pg_dump -U ha_dashboard ha_dashboard > ./backups/db_backup_$(date +%Y%m%d_%H%M%S).sql 2>/dev/null || echo "Backup skipped (database not running)"
           
           # Pull and build Docker images
           echo "🐳 Building Docker images..."
