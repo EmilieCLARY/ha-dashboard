@@ -1,6 +1,6 @@
 # 🏠 Home Assistant Dashboard
 
-Dashboard de monitoring personnalisé pour Home Assistant avec React, Node.js, PostgreSQL et Redis.
+Dashboard de monitoring personnalisé pour Home Assistant avec React, Node.js, PostgreSQL et Redis. 🚀
 
 ## ✨ Fonctionnalités
 
