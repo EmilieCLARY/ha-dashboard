@@ -42,6 +42,11 @@ mkdir -p $(dirname ${LOG_FILE})
 
 echo "[$(date)] Starting SSL renewal for ${DOMAIN}" >> ${LOG_FILE}
 
+# Stop nginx to free port 80
+cd ${APP_PATH}
+docker-compose stop nginx
+echo "[$(date)] Nginx stopped for renewal" >> ${LOG_FILE}
+
 # Renew certificate
 if certbot renew --quiet --cert-name ${DOMAIN}; then
     echo "[$(date)] Certificate renewed successfully" >> ${LOG_FILE}
@@ -52,17 +57,17 @@ if certbot renew --quiet --cert-name ${DOMAIN}; then
         cp /etc/letsencrypt/live/${DOMAIN}/privkey.pem ${APP_PATH}/nginx/ssl/
         chmod 644 ${APP_PATH}/nginx/ssl/*.pem
         echo "[$(date)] Certificates copied" >> ${LOG_FILE}
-        
-        # Restart nginx
-        cd ${APP_PATH}
-        docker-compose restart nginx
-        echo "[$(date)] Nginx restarted" >> ${LOG_FILE}
     else
         echo "[$(date)] ERROR: Certificate directory not found" >> ${LOG_FILE}
     fi
 else
     echo "[$(date)] ERROR: Certificate renewal failed" >> ${LOG_FILE}
 fi
+
+# Always restart nginx
+cd ${APP_PATH}
+docker-compose up -d nginx
+echo "[$(date)] Nginx restarted" >> ${LOG_FILE}
 
 echo "[$(date)] SSL renewal completed" >> ${LOG_FILE}
 EOF
