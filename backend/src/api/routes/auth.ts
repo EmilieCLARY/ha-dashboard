@@ -31,19 +31,23 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     }
 
     // Register user
-    const result = await authService.register({ email, password, name });
-
-    res.status(201).json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    logger.error('Registration error:', error);
-    res.status(400).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Registration failed',
-    });
-  }
+    try {
+      const result = await authService.register({ email, password, name });
+      res.status(201).json({
+        success: true,
+        data: result,
+      });
+    } catch (error: any) {
+      logger.error('Registration error:', error);
+      let message = 'Échec de l\'inscription.';
+      if (error instanceof Error && error.message.includes('User with this email already exists')) {
+        message = 'Un compte existe déjà avec cet email.';
+      }
+      res.status(400).json({
+        success: false,
+        error: message,
+      });
+    }
 });
 
 /**
@@ -64,19 +68,23 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     }
 
     // Login user
-    const result = await authService.login({ email, password });
-
-    res.json({
-      success: true,
-      data: result,
-    });
-  } catch (error) {
-    logger.error('Login error:', error);
-    res.status(401).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Login failed',
-    });
-  }
+    try {
+      const result = await authService.login({ email, password });
+      res.json({
+        success: true,
+        data: result,
+      });
+    } catch (error: any) {
+      logger.error('Login error:', error);
+      let message = 'Échec de la connexion.';
+      if (error instanceof Error && error.message.includes('Invalid email or password')) {
+        message = 'Email ou mot de passe invalide.';
+      }
+      res.status(401).json({
+        success: false,
+        error: message,
+      });
+    }
 });
 
 /**
