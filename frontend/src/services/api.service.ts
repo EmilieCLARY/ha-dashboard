@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import type { HomeAssistantEntity, APIResponse, EntitiesResponse } from '../types/homeAssistant';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 interface HistoryDataPoint {
   state: string;
