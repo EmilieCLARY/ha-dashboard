@@ -139,8 +139,8 @@ jobs:
 
     - name: Build
       env:
-        VITE_API_URL: https://api.example.com
-        VITE_WS_URL: wss://api.example.com
+        VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
       run: cd frontend && npm run build
 
     - name: Upload build artifacts
@@ -498,19 +498,33 @@ jobs:
       if: steps.deploy-attempt-1.outcome == 'success' || steps.deploy-attempt-2.outcome == 'success' || steps.deploy-attempt-3.outcome == 'success'
       env:
         VPS_HOST: ${{ secrets.VPS_HOST }}
+        VPS_DOMAIN: ${{ secrets.VPS_DOMAIN }}
       run: |
         echo "Waiting for services to start..."
         sleep 15
         
         echo "Checking backend health..."
         for i in {1..10}; do
-          echo "Health check attempt $i/10..."
+          echo "Backend health check attempt $i/10..."
           if curl -f http://${VPS_HOST}:4000/health 2>/dev/null; then
             echo "✅ Backend health check passed!"
             break
           fi
           if [ $i -eq 10 ]; then
-            echo "⚠️ Health check did not pass, but deployment may still be successful"
+            echo "⚠️ Backend health check did not pass, but deployment may still be successful"
+          fi
+          sleep 10
+        done
+
+        echo "Checking nginx (frontend) health..."
+        for i in {1..10}; do
+          echo "Nginx health check attempt $i/10..."
+          if curl -f https://${VPS_DOMAIN} --insecure 2>/dev/null; then
+            echo "✅ Nginx health check passed!"
+            break
+          fi
+          if [ $i -eq 10 ]; then
+            echo "⚠️ Nginx health check did not pass, but deployment may still be successful"
           fi
           sleep 10
         done

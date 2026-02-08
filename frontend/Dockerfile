@@ -1,3 +1,4 @@
+# Astuce : lors des builds CI/CD, utiliser --no-cache pour garantir un build frontend toujours propre
 # Build stage
 FROM node:20-alpine AS builder
 
@@ -30,6 +31,9 @@ FROM nginx:alpine
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+
+# Clean old build (defensive, in case of volume mount or cache)
+RUN rm -rf /usr/share/nginx/html/*
 # Copy built files from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
