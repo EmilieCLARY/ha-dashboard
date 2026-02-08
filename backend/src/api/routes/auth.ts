@@ -31,9 +31,12 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     }
 
     // Register user
-    let result;
     try {
-      result = await authService.register({ email, password, name });
+      const result = await authService.register({ email, password, name });
+      res.status(201).json({
+        success: true,
+        data: result,
+      });
     } catch (error: any) {
       logger.error('Registration error:', error);
       let message = 'Échec de l\'inscription.';
@@ -44,12 +47,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
         success: false,
         error: message,
       });
-      return;
     }
-    res.status(201).json({
-      success: true,
-      data: result,
-    });
 });
 
 /**
@@ -70,9 +68,12 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     }
 
     // Login user
-    let result;
     try {
-      result = await authService.login({ email, password });
+      const result = await authService.login({ email, password });
+      res.json({
+        success: true,
+        data: result,
+      });
     } catch (error: any) {
       logger.error('Login error:', error);
       let message = 'Échec de la connexion.';
@@ -83,12 +84,7 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         success: false,
         error: message,
       });
-      return;
     }
-    res.json({
-      success: true,
-      data: result,
-    });
 });
 
 /**
