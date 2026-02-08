@@ -8,18 +8,7 @@ const router = Router();
 /**
  * POST /api/auth/register
  * Register a new user
- * NOTE: Registration disabled for security. Uncomment to re-enable.
  */
-router.post('/register', async (_req: Request, res: Response): Promise<void> => {
-  res.status(403).json({
-    success: false,
-    error: 'Registration is disabled',
-  });
-});
-
-/*
- * REGISTRATION CODE — kept for later use
- *
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, name } = req.body;
@@ -56,7 +45,6 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     });
   }
 });
-*/
 
 /**
  * POST /api/auth/login
