@@ -4,19 +4,24 @@ import { useAuthStore } from '../stores/auth.store';
 import { LogIn } from 'lucide-react';
 
 export function LoginPage() {
-  // NOTE: Registration disabled for security. To re-enable, restore isRegisterMode state and register form.
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const { login, register, isLoading, error, clearError } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
 
     try {
-      await login(email, password);
+      if (isRegisterMode) {
+        await register(email, password, name);
+      } else {
+        await login(email, password);
+      }
       navigate('/');
     } catch (error) {
       console.error('Auth error:', error);
@@ -33,10 +38,12 @@ export function LoginPage() {
               <LogIn className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Connexion
+              {isRegisterMode ? 'Créer un compte' : 'Connexion'}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Connectez-vous pour accéder au dashboard
+              {isRegisterMode 
+                ? 'Créez un compte pour accéder au dashboard'
+                : 'Connectez-vous pour accéder au dashboard'}
             </p>
           </div>
 
@@ -49,6 +56,26 @@ export function LoginPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
+            {isRegisterMode && (
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Nom
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required={isRegisterMode}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
+                  placeholder="John Doe"
+                />
+              </div>
+            )}
+
             <div>
               <label
                 htmlFor="email"
@@ -94,16 +121,31 @@ export function LoginPage() {
               {isLoading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Connexion...
+                  {isRegisterMode ? 'Inscription...' : 'Connexion...'}
                 </>
               ) : (
                 <>
                   <LogIn className="w-5 h-5" />
-                  Se connecter
+                  {isRegisterMode ? "S'inscrire" : 'Se connecter'}
                 </>
               )}
             </button>
           </form>
+
+          {/* Toggle between login and register */}
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => {
+                setIsRegisterMode(!isRegisterMode);
+                clearError();
+              }}
+              className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+            >
+              {isRegisterMode
+                ? 'Déjà un compte ? Se connecter'
+                : "Pas de compte ? S'inscrire"}
+            </button>
+          </div>
         </div>
 
         {/* Footer */}
