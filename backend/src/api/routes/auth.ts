@@ -17,7 +17,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     if (!email || !password) {
       res.status(400).json({
         success: false,
-        error: 'Email and password are required',
+        error: 'Email et mot de passe requis',
       });
       return;
     }
@@ -25,29 +25,28 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     if (password.length < 8) {
       res.status(400).json({
         success: false,
-        error: 'Password must be at least 8 characters long',
+        error: 'Le mot de passe doit contenir au moins 8 caractères.',
       });
       return;
     }
 
     // Register user
-    try {
-      const result = await authService.register({ email, password, name });
-      res.status(201).json({
-        success: true,
-        data: result,
-      });
-    } catch (error: any) {
-      logger.error('Registration error:', error);
-      let message = 'Échec de l\'inscription.';
-      if (error instanceof Error && error.message.includes('User with this email already exists')) {
-        message = 'Un compte existe déjà avec cet email.';
-      }
-      res.status(400).json({
-        success: false,
-        error: message,
-      });
+    const result = await authService.register({ email, password, name });
+    res.status(201).json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    logger.error('Registration error:', error);
+    let message = 'Échec de l\'inscription.';
+    if (error instanceof Error && error.message.includes('User with this email already exists')) {
+      message = 'Un compte existe déjà avec cet email.';
     }
+    res.status(400).json({
+      success: false,
+      error: message,
+    });
+  }
 });
 
 /**
@@ -62,29 +61,28 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     if (!email || !password) {
       res.status(400).json({
         success: false,
-        error: 'Email and password are required',
+        error: 'Email et mot de passe requis',
       });
       return;
     }
 
     // Login user
-    try {
-      const result = await authService.login({ email, password });
-      res.json({
-        success: true,
-        data: result,
-      });
-    } catch (error: any) {
-      logger.error('Login error:', error);
-      let message = 'Échec de la connexion.';
-      if (error instanceof Error && error.message.includes('Invalid email or password')) {
-        message = 'Email ou mot de passe invalide.';
-      }
-      res.status(401).json({
-        success: false,
-        error: message,
-      });
+    const result = await authService.login({ email, password });
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    logger.error('Login error:', error);
+    let message = 'Échec de la connexion.';
+    if (error instanceof Error && error.message.includes('Invalid email or password')) {
+      message = 'Email ou mot de passe invalide.';
     }
+    res.status(401).json({
+      success: false,
+      error: message,
+    });
+  }
 });
 
 /**
